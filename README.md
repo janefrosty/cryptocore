@@ -54,14 +54,23 @@ cryptocore enc --algorithm aes --mode cbc --decrypt --key [KEY] --input cipherte
 
 .../src/cryptocore/
 ├── hash/                   # NEW - Папка хэш-функций
+
 │   ├── __init__.py        # NEW - Инициализация
+
 │   ├── sha256.py          # NEW - SHA-256 с нуля
+
 │   └── sha3_256.py        # NEW - SHA3-256 с нуля
+
 ├── cli_parser.py          # UPD - Поддержка подкоманд
+
 ├── main.py                # UPD - Обработка хэшей
+
 └── ...
+
 tests/
+
 ├── test_hash_functions.py     # NEW - Тесты хэшей
+
 └── test_sprint4_cli.ps1      # NEW - CLI тесты
 
 ## Тестирование 
