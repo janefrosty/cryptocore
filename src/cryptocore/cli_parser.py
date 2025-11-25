@@ -35,7 +35,7 @@ def parse_arguments():
         print("Error: Only AES is supported.", file=sys.stderr)
         sys.exit(1)
 
-    # SPRINT 2: Extended mode support - ВАЖНО: убрана проверка на ECB!
+    # SPRINT 2: Extended mode support 
     supported_modes = ['ecb', 'cbc', 'cfb', 'ofb', 'ctr']
     if args.mode.lower() not in supported_modes:
         print(f"Error: Supported modes are: {', '.join(supported_modes)}", file=sys.stderr)
