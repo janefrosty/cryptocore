@@ -3,6 +3,7 @@ setup.py
 src/cryptocore/__init__.py
 src/cryptocore/__main__.py
 src/cryptocore/cli_parser.py
+src/cryptocore/csprng.py
 src/cryptocore/file_io.py
 src/cryptocore/main.py
 src/cryptocore.egg-info/PKG-INFO
@@ -17,3 +18,4 @@ src/cryptocore/modes/cfb.py
 src/cryptocore/modes/ctr.py
 src/cryptocore/modes/ecb.py
 src/cryptocore/modes/ofb.py
+tests/test_csprng.py

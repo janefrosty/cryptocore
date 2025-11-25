@@ -1,21 +1,21 @@
-# CryptoCore
-AES-128 ECB CLI tool for Windows.
 
-## 🔧 Installation on Windows 11
+## SPRINT 3 Features
 
-Install dependencies:
-pip install -r requirements.txt
-
-
-## SPRINT 2 Features
-
-- **New Modes**: CBC, CFB, OFB, CTR
-- **IV Handling**: Secure random generation for encryption, flexible input for decryption
-- **Interoperability**: Full compatibility with OpenSSL
-- **Backward Compatibility**: All Sprint 1 features preserved
+- **Automatic Key Generation**: Secure random key generation when `--key` is omitted
+- **CSPRNG Module**: Cryptographically secure random number generator using OS RNG
+- **Weak Key Detection**: Warning for potentially weak user-provided keys
+- **NIST Test Suite**: Support for statistical randomness testing
 
 ## Installation
 
 ```bash
 pip install -r requirements.txt
 pip install -e .
+
+# Key will be automatically generated and displayed
+cryptocore --algorithm aes --mode cbc --encrypt --input plaintext.txt --output ciphertext.bin
+
+# Output: 
+# [INFO] Generated random key: 1a2b3c4d5e6f7890fedcba9876543210
+# Encryption successful. Output written to ciphertext.bin
+# IV (hex): a1b2c3d4e5f678901234567890abcdef

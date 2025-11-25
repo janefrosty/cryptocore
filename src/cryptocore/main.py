@@ -2,6 +2,7 @@ import os
 import sys
 from .cli_parser import parse_arguments
 from .file_io import read_binary_file, write_binary_file, read_file_with_iv, write_file_with_iv
+from .csprng import generate_key, generate_iv
 
 # SPRINT 1 imports
 from .modes.ecb import aes_ecb_encrypt, aes_ecb_decrypt
@@ -32,20 +33,28 @@ DECRYPT_FUNCTIONS = {
 def main():
     try:
         args = parse_arguments()
-        key = bytes.fromhex(args.key)
         
-        # SPRINT 2: Extended mode handling
+        # SPRINT 3: Key handling - generate if not provided for encryption
+        if args.key:
+            key = bytes.fromhex(args.key)
+        else:
+            # Generate random key for encryption
+            key = generate_key(16)  # AES-128
+            key_hex = key.hex()
+            print(f"[INFO] Generated random key: {key_hex}")
+        
         if args.encrypt:
+            # SPRINT 3: Use CSPRNG for IV generation
             if args.mode == 'ecb':
-                # SPRINT 1: ECB mode (unchanged logic)
+                # ECB doesn't use IV
                 data = read_binary_file(args.input)
                 result = aes_ecb_encrypt(key, data)
                 write_binary_file(args.output, result)
                 print(f"Encryption successful. Output written to {args.output}")
             else:
-                # SPRINT 2: New modes with IV
+                # Generate random IV using CSPRNG
+                iv = generate_iv()
                 data = read_binary_file(args.input)
-                iv = os.urandom(16)  # Secure random IV
                 encrypt_func = ENCRYPT_FUNCTIONS[args.mode]
                 result = encrypt_func(key, data, iv)
                 write_file_with_iv(args.output, iv, result)
@@ -53,28 +62,38 @@ def main():
                 print(f"IV (hex): {iv.hex()}")
         
         else:  # Decryption
+            decrypt_func = DECRYPT_FUNCTIONS[args.mode]
+            
             if args.mode == 'ecb':
-                # SPRINT 1: ECB mode (unchanged logic)
                 data = read_binary_file(args.input)
-                result = aes_ecb_decrypt(key, data)
+                result = decrypt_func(key, data)
                 write_binary_file(args.output, result)
                 print(f"Decryption successful. Output written to {args.output}")
             else:
-                # SPRINT 2: New modes with IV handling
-                decrypt_func = DECRYPT_FUNCTIONS[args.mode]
-                
                 if args.iv:
                     # Use provided IV
                     iv = bytes.fromhex(args.iv)
                     data = read_binary_file(args.input)
                 else:
                     # Read IV from file
-                    iv, data = read_file_with_iv(args.input)
+                    try:
+                        iv, data = read_file_with_iv(args.input)
+                    except ValueError as e:
+                        print(f"Error reading IV from file: {e}", file=sys.stderr)
+                        sys.exit(1)
                 
-                result = decrypt_func(key, data, iv)
-                write_binary_file(args.output, result)
-                print(f"Decryption successful. Output written to {args.output}")
+                try:
+                    result = decrypt_func(key, data, iv)
+                    write_binary_file(args.output, result)
+                    print(f"Decryption successful. Output written to {args.output}")
+                except ValueError as e:
+                    print(f"Decryption error: {e}", file=sys.stderr)
+                    print("This might be due to: incorrect key, incorrect IV, or corrupted ciphertext", file=sys.stderr)
+                    sys.exit(1)
     
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
+
+if __name__ == "__main__":
+    main()
