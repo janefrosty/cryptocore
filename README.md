@@ -14,19 +14,16 @@ pip install -e .
 ```
 ## Проверка всех режимов
 ```PowerShell
-# Тест ECB (Sprint 1)
-cryptocore --algorithm aes --mode ecb --encrypt --key 00112233445566778899aabbccddeeff --input original.txt --output encrypted.bin
-cryptocore --algorithm aes --mode ecb --decrypt --key 00112233445566778899aabbccddeeff --input encrypted.bin --output decrypted.txt
 
-# Тест CBC
+# CBC
 cryptocore --algorithm aes --mode cbc --encrypt --key 00112233445566778899aabbccddeeff --input original.txt --output encrypted.bin
 cryptocore --algorithm aes --mode cbc --decrypt --key 00112233445566778899aabbccddeeff --input encrypted.bin --output decrypted.txt
 
-# Тест CFB
+# CFB
 cryptocore --algorithm aes --mode cfb --encrypt --key 00112233445566778899aabbccddeeff --input original.txt --output encrypted.bin
 cryptocore --algorithm aes --mode cfb --decrypt --key 00112233445566778899aabbccddeeff --input encrypted.bin --output decrypted.txt
 
-# Тест CTR
+# CTR
 cryptocore --algorithm aes --mode ctr --encrypt --key 00112233445566778899aabbccddeeff --input original.txt --output encrypted.bin
 cryptocore --algorithm aes --mode ctr --decrypt --key 00112233445566778899aabbccddeeff --input encrypted.bin --output decrypted.txt
 ```
