@@ -6,7 +6,7 @@
 - **Interoperability**: Full compatibility with OpenSSL
 - **Backward Compatibility**: All Sprint 1 features preserved
 
-## Installation
+## Запуск
 
 ```PowerShell
 pip install -r requirements.txt
