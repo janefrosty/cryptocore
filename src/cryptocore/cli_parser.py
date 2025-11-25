@@ -3,37 +3,78 @@ import sys
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description="CryptoCore - AES Encryption/Decryption Tool",
+        description="CryptoCore - Cryptographic Tool Suite",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-
-    parser.add_argument(
+    
+    # SPRINT 4: Add subcommands
+    subparsers = parser.add_subparsers(dest='command', help='Command to execute')
+    
+    # Encryption/decryption command (existing functionality)
+    enc_parser = subparsers.add_parser('enc', help='Encryption/decryption operations')
+    
+    enc_parser.add_argument(
         "--algorithm", 
         required=True,
         help="Cryptographic algorithm to use"
     )
     
-    parser.add_argument(
+    enc_parser.add_argument(
         "--mode", 
         required=True,
         choices=['ecb', 'cbc', 'cfb', 'ofb', 'ctr'],
         help="Block cipher mode of operation"
     )
 
-    action_group = parser.add_mutually_exclusive_group(required=True)
+    action_group = enc_parser.add_mutually_exclusive_group(required=True)
     action_group.add_argument("--encrypt", action="store_true")
     action_group.add_argument("--decrypt", action="store_true")
 
-    parser.add_argument("--key", help="Encryption key as hexadecimal string (optional for encryption)")
-    parser.add_argument("--iv", help="Initialization vector as hexadecimal string (for decryption)")
-    parser.add_argument("--input", required=True, help="Input file path")
-    parser.add_argument("--output", help="Output file path")
+    enc_parser.add_argument("--key", help="Encryption key as hexadecimal string (optional for encryption)")
+    enc_parser.add_argument("--iv", help="Initialization vector as hexadecimal string (for decryption)")
+    enc_parser.add_argument("--input", required=True, help="Input file path")
+    enc_parser.add_argument("--output", help="Output file path")
+    
+    # SPRINT 4: Hash command
+    hash_parser = subparsers.add_parser('dgst', help='Compute message digests')
+    
+    hash_parser.add_argument(
+        "--algorithm",
+        required=True,
+        choices=['sha256', 'sha3-256'],
+        help="Hash algorithm to use"
+    )
+    
+    hash_parser.add_argument(
+        "--input",
+        required=True,
+        help="Input file path"
+    )
+    
+    hash_parser.add_argument(
+        "--output",
+        help="Output file for hash (optional)"
+    )
 
     args = parser.parse_args()
+    
+    # Handle no command provided
+    if args.command is None:
+        parser.print_help()
+        sys.exit(1)
+    
+    # SPRINT 4: Different validation for different commands
+    if args.command == 'enc':
+        _validate_encryption_args(args)
+    elif args.command == 'dgst':
+        _validate_hash_args(args)
+    
+    return args
 
+def _validate_encryption_args(args):
     # Validate algorithm
     if args.algorithm.lower() != "aes":
-        print("Error: Only AES is supported.", file=sys.stderr)
+        print("Error: Only AES is supported for encryption.", file=sys.stderr)
         sys.exit(1)
 
     # Check for conflicting operations
@@ -41,7 +82,7 @@ def parse_arguments():
         print("Error: Choose exactly one: --encrypt or --decrypt", file=sys.stderr)
         sys.exit(1)
 
-    # SPRINT 3: Key validation - optional for encryption, required for decryption
+    # Key validation
     if args.key:
         try:
             key_bytes = bytes.fromhex(args.key)
@@ -50,7 +91,7 @@ def parse_arguments():
                 print("Error: AES key must be 16, 24, or 32 bytes (32, 48, or 64 hex characters).", file=sys.stderr)
                 sys.exit(1)
             
-            # SPRINT 3: Check for weak keys
+            # Check for weak keys
             if _is_weak_key(key_bytes):
                 print(f"Warning: The provided key may be weak. Consider using a randomly generated key.", file=sys.stderr)
                 
@@ -58,12 +99,12 @@ def parse_arguments():
             print("Error: Key must be valid hex.", file=sys.stderr)
             sys.exit(1)
     else:
-        # SPRINT 3: Key is optional for encryption, required for decryption
+        # Key is optional for encryption, required for decryption
         if args.decrypt:
             print("Error: Key is required for decryption operations.", file=sys.stderr)
             sys.exit(1)
 
-    # SPRINT 3: IV validation
+    # IV validation
     if args.iv:
         if args.encrypt:
             print("Warning: IV is generated automatically during encryption. Provided IV will be ignored.", 
@@ -85,7 +126,9 @@ def parse_arguments():
         else:
             args.output = args.input + ".dec"
 
-    return args
+def _validate_hash_args(args):
+    # Input file validation will happen in main
+    pass
 
 def _is_weak_key(key_bytes):
     # Check for all zeros
