@@ -2,15 +2,18 @@ import argparse
 import sys
 
 def parse_arguments():
+    """
+    CLI argument parser for CryptoCore
+    Sprint 5: Added HMAC support with --hmac and --verify flags
+    """
     parser = argparse.ArgumentParser(
         description="CryptoCore - Cryptographic Tool Suite",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     
-    # SPRINT 4: Add subcommands
     subparsers = parser.add_subparsers(dest='command', help='Command to execute')
     
-    # Encryption/decryption command (existing functionality)
+    # Encryption/decryption command (Sprints 1-3)
     enc_parser = subparsers.add_parser('enc', help='Encryption/decryption operations')
     
     enc_parser.add_argument(
@@ -35,14 +38,31 @@ def parse_arguments():
     enc_parser.add_argument("--input", required=True, help="Input file path")
     enc_parser.add_argument("--output", help="Output file path")
     
-    # SPRINT 4: Hash command
-    hash_parser = subparsers.add_parser('dgst', help='Compute message digests')
+    # Hash/HMAC command (Sprints 4-5)
+    hash_parser = subparsers.add_parser('dgst', help='Compute message digests and HMACs')
     
     hash_parser.add_argument(
         "--algorithm",
         required=True,
         choices=['sha256', 'sha3-256'],
         help="Hash algorithm to use"
+    )
+    
+    # Sprint 5: HMAC options
+    hash_parser.add_argument(
+        "--hmac",
+        action="store_true",
+        help="Enable HMAC mode (requires --key)"
+    )
+    
+    hash_parser.add_argument(
+        "--key",
+        help="Key for HMAC mode (hexadecimal string, required when --hmac is used)"
+    )
+    
+    hash_parser.add_argument(
+        "--verify",
+        help="Verify HMAC against file containing expected value"
     )
     
     hash_parser.add_argument(
@@ -53,17 +73,15 @@ def parse_arguments():
     
     hash_parser.add_argument(
         "--output",
-        help="Output file for hash (optional)"
+        help="Output file for hash/HMAC (optional)"
     )
 
     args = parser.parse_args()
     
-    # Handle no command provided
     if args.command is None:
         parser.print_help()
         sys.exit(1)
     
-    # SPRINT 4: Different validation for different commands
     if args.command == 'enc':
         _validate_encryption_args(args)
     elif args.command == 'dgst':
@@ -72,54 +90,47 @@ def parse_arguments():
     return args
 
 def _validate_encryption_args(args):
-    # Validate algorithm
+    """Validate encryption/decryption arguments (Sprints 1-3)"""
     if args.algorithm.lower() != "aes":
         print("Error: Only AES is supported for encryption.", file=sys.stderr)
         sys.exit(1)
 
-    # Check for conflicting operations
     if args.encrypt == args.decrypt:
         print("Error: Choose exactly one: --encrypt or --decrypt", file=sys.stderr)
         sys.exit(1)
 
-    # Key validation
     if args.key:
         try:
             key_bytes = bytes.fromhex(args.key)
             key_length = len(key_bytes)
             if key_length not in [16, 24, 32]:
-                print("Error: AES key must be 16, 24, or 32 bytes (32, 48, or 64 hex characters).", file=sys.stderr)
+                print("Error: AES key must be 16, 24, or 32 bytes.", file=sys.stderr)
                 sys.exit(1)
             
-            # Check for weak keys
             if _is_weak_key(key_bytes):
-                print(f"Warning: The provided key may be weak. Consider using a randomly generated key.", file=sys.stderr)
+                print(f"Warning: The provided key may be weak.", file=sys.stderr)
                 
         except ValueError:
             print("Error: Key must be valid hex.", file=sys.stderr)
             sys.exit(1)
     else:
-        # Key is optional for encryption, required for decryption
         if args.decrypt:
             print("Error: Key is required for decryption operations.", file=sys.stderr)
             sys.exit(1)
 
-    # IV validation
     if args.iv:
         if args.encrypt:
-            print("Warning: IV is generated automatically during encryption. Provided IV will be ignored.", 
-                  file=sys.stderr)
+            print("Warning: IV is generated automatically during encryption.", file=sys.stderr)
         else:
             try:
                 iv_bytes = bytes.fromhex(args.iv)
                 if len(iv_bytes) != 16:
-                    print("Error: IV must be 16 bytes (32 hex characters).", file=sys.stderr)
+                    print("Error: IV must be 16 bytes.", file=sys.stderr)
                     sys.exit(1)
             except ValueError:
                 print("Error: IV must be valid hex.", file=sys.stderr)
                 sys.exit(1)
 
-    # Auto output
     if args.output is None:
         if args.encrypt:
             args.output = args.input + ".enc"
@@ -127,28 +138,48 @@ def _validate_encryption_args(args):
             args.output = args.input + ".dec"
 
 def _validate_hash_args(args):
-    # Input file validation will happen in main
-    pass
+    """
+    Validate hash/HMAC command arguments (Sprints 4-5)
+    Sprint 5: Added HMAC validation
+    """
+    # Sprint 5: Validate HMAC requirements
+    if args.hmac:
+        if not args.key:
+            print("Error: --key is required when using --hmac", file=sys.stderr)
+            sys.exit(1)
+        
+        try:
+            key_bytes = bytes.fromhex(args.key)
+            # HMAC supports keys of any length, but validate hex format
+            if len(key_bytes) == 0:
+                print("Error: Key cannot be empty", file=sys.stderr)
+                sys.exit(1)
+        except ValueError:
+            print("Error: Key must be valid hexadecimal string", file=sys.stderr)
+            sys.exit(1)
+    
+    # Sprint 5: If --verify is used, --hmac must be enabled
+    if args.verify and not args.hmac:
+        print("Error: --verify can only be used with --hmac", file=sys.stderr)
+        sys.exit(1)
 
 def _is_weak_key(key_bytes):
-    # Check for all zeros
+    """
+    Sprint 3: Weak key detection
+    """
     if all(b == 0 for b in key_bytes):
         return True
     
-    # Check for sequential bytes
     sequential_up = all(key_bytes[i] == (key_bytes[i-1] + 1) % 256 for i in range(1, len(key_bytes)))
     sequential_down = all(key_bytes[i] == (key_bytes[i-1] - 1) % 256 for i in range(1, len(key_bytes)))
     
     if sequential_up or sequential_down:
         return True
     
-    # Check for repeated patterns
     if len(key_bytes) >= 4:
-        # Check if key is all same byte
         if len(set(key_bytes)) == 1:
             return True
         
-        # Check for simple repeating patterns
         for pattern_len in [2, 4, 8]:
             if len(key_bytes) % pattern_len == 0:
                 pattern = key_bytes[:pattern_len]
