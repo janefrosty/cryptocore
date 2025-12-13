@@ -4,7 +4,7 @@ import sys
 def parse_arguments():
     """
     CLI argument parser for CryptoCore
-    Sprint 5: Added HMAC support with --hmac and --verify flags
+    Sprint 6: Added GCM mode and AAD support for authenticated encryption
     """
     parser = argparse.ArgumentParser(
         description="CryptoCore - Cryptographic Tool Suite",
@@ -13,7 +13,7 @@ def parse_arguments():
     
     subparsers = parser.add_subparsers(dest='command', help='Command to execute')
     
-    # Encryption/decryption command (Sprints 1-3)
+    # Encryption/decryption command (Sprints 1-6)
     enc_parser = subparsers.add_parser('enc', help='Encryption/decryption operations')
     
     enc_parser.add_argument(
@@ -22,10 +22,11 @@ def parse_arguments():
         help="Cryptographic algorithm to use"
     )
     
+    # Sprint 6: Added GCM mode
     enc_parser.add_argument(
         "--mode", 
         required=True,
-        choices=['ecb', 'cbc', 'cfb', 'ofb', 'ctr'],
+        choices=['ecb', 'cbc', 'cfb', 'ofb', 'ctr', 'gcm'],
         help="Block cipher mode of operation"
     )
 
@@ -34,7 +35,17 @@ def parse_arguments():
     action_group.add_argument("--decrypt", action="store_true")
 
     enc_parser.add_argument("--key", help="Encryption key as hexadecimal string (optional for encryption)")
-    enc_parser.add_argument("--iv", help="Initialization vector as hexadecimal string (for decryption)")
+    
+    # Sprint 6: Renamed --iv to --nonce for GCM, but keep --iv for backward compatibility
+    enc_parser.add_argument("--iv", help="Initialization vector/nonce as hexadecimal string (for decryption)")
+    enc_parser.add_argument("--nonce", help="Nonce for GCM mode (alternative to --iv)")
+    
+    # Sprint 6: Added AAD support
+    enc_parser.add_argument(
+        "--aad", 
+        help="Associated Authenticated Data as hexadecimal string (for GCM mode)"
+    )
+    
     enc_parser.add_argument("--input", required=True, help="Input file path")
     enc_parser.add_argument("--output", help="Output file path")
     
@@ -48,7 +59,6 @@ def parse_arguments():
         help="Hash algorithm to use"
     )
     
-    # Sprint 5: HMAC options
     hash_parser.add_argument(
         "--hmac",
         action="store_true",
@@ -90,7 +100,7 @@ def parse_arguments():
     return args
 
 def _validate_encryption_args(args):
-    """Validate encryption/decryption arguments (Sprints 1-3)"""
+    """Validate encryption/decryption arguments (Sprints 1-6)"""
     if args.algorithm.lower() != "aes":
         print("Error: Only AES is supported for encryption.", file=sys.stderr)
         sys.exit(1)
@@ -99,6 +109,7 @@ def _validate_encryption_args(args):
         print("Error: Choose exactly one: --encrypt or --decrypt", file=sys.stderr)
         sys.exit(1)
 
+    # Key validation
     if args.key:
         try:
             key_bytes = bytes.fromhex(args.key)
@@ -118,19 +129,46 @@ def _validate_encryption_args(args):
             print("Error: Key is required for decryption operations.", file=sys.stderr)
             sys.exit(1)
 
-    if args.iv:
+    # Sprint 6: IV/Nonce validation for GCM
+    if args.mode == 'gcm':
+        # For GCM encryption, nonce is auto-generated
         if args.encrypt:
-            print("Warning: IV is generated automatically during encryption.", file=sys.stderr)
+            if args.iv or args.nonce:
+                print("Warning: Nonce is generated automatically during GCM encryption.", file=sys.stderr)
         else:
-            try:
-                iv_bytes = bytes.fromhex(args.iv)
-                if len(iv_bytes) != 16:
-                    print("Error: IV must be 16 bytes.", file=sys.stderr)
+            # For GCM decryption, nonce can be provided or read from file
+            if args.iv:
+                try:
+                    nonce_bytes = bytes.fromhex(args.iv)
+                    if len(nonce_bytes) != 12:
+                        print("Warning: GCM typically uses 12-byte nonce.", file=sys.stderr)
+                except ValueError:
+                    print("Error: Nonce must be valid hex.", file=sys.stderr)
                     sys.exit(1)
-            except ValueError:
-                print("Error: IV must be valid hex.", file=sys.stderr)
-                sys.exit(1)
+            elif args.nonce:
+                try:
+                    nonce_bytes = bytes.fromhex(args.nonce)
+                    if len(nonce_bytes) != 12:
+                        print("Warning: GCM typically uses 12-byte nonce.", file=sys.stderr)
+                except ValueError:
+                    print("Error: Nonce must be valid hex.", file=sys.stderr)
+                    sys.exit(1)
+    
+    # Sprint 6: AAD validation for GCM
+    if args.aad:
+        if args.mode != 'gcm':
+            print("Warning: AAD is only used with GCM mode.", file=sys.stderr)
+        
+        try:
+            aad_bytes = bytes.fromhex(args.aad)
+        except ValueError:
+            print("Error: AAD must be valid hex.", file=sys.stderr)
+            sys.exit(1)
+    else:
+        # Empty AAD is valid for GCM
+        args.aad = ""
 
+    # Auto output
     if args.output is None:
         if args.encrypt:
             args.output = args.input + ".enc"
@@ -140,9 +178,7 @@ def _validate_encryption_args(args):
 def _validate_hash_args(args):
     """
     Validate hash/HMAC command arguments (Sprints 4-5)
-    Sprint 5: Added HMAC validation
     """
-    # Sprint 5: Validate HMAC requirements
     if args.hmac:
         if not args.key:
             print("Error: --key is required when using --hmac", file=sys.stderr)
@@ -150,7 +186,6 @@ def _validate_hash_args(args):
         
         try:
             key_bytes = bytes.fromhex(args.key)
-            # HMAC supports keys of any length, but validate hex format
             if len(key_bytes) == 0:
                 print("Error: Key cannot be empty", file=sys.stderr)
                 sys.exit(1)
@@ -158,7 +193,6 @@ def _validate_hash_args(args):
             print("Error: Key must be valid hexadecimal string", file=sys.stderr)
             sys.exit(1)
     
-    # Sprint 5: If --verify is used, --hmac must be enabled
     if args.verify and not args.hmac:
         print("Error: --verify can only be used with --hmac", file=sys.stderr)
         sys.exit(1)
