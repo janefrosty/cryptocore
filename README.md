@@ -1,10 +1,10 @@
-### Sprint 5: Коды аутентификации сообщений
+# Sprint 5: Коды аутентификации сообщений
 - Реализация HMAC-SHA256 в соответствии с RFC 2104
 - Проверка HMAC с флагом --verify
 - Обнаружение подделки файлов и ключей
 - Поддержка ключей переменной длины
 
-# HMAC (Sprint 5)
+## HMAC 
 ```bash
 # Generate HMAC
 cryptocore dgst --algorithm sha256 --hmac --key 00112233445566778899aabbccddeeff --input message.txt
@@ -16,7 +16,7 @@ cryptocore dgst --algorithm sha256 --hmac --key [KEY] --input file.txt --output 
 cryptocore dgst --algorithm sha256 --hmac --key [KEY] --input file.txt --verify expected_hmac.txt
 ```
 
-# Key Size Variations for HMAC
+## Key Size Variations for HMAC
 ```bash
 # Short key (16 bytes)
 cryptocore dgst --algorithm sha256 --hmac --key 00112233445566778899aabbccddeeff --input file.txt
