@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cryptocore",
-    version="6.0.0",  # Sprint 6 version
+    version="7.0.0", 
     packages=find_packages("src"),
     package_dir={"": "src"},
     install_requires=["pycryptodome"],

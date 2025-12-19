@@ -223,3 +223,53 @@ def _is_weak_key(key_bytes):
                     return True
     
     return False
+
+#Sprint7
+def add_derive_parser(subparsers):
+    derive_parser = subparsers.add_parser(
+        'derive',
+        help='Derive keys from passwords or other keys'
+    )
+    
+    # Password input options
+    password_group = derive_parser.add_mutually_exclusive_group(required=True)
+    password_group.add_argument(
+        '--password',
+        help='Password string (quote if containing special characters)'
+    )
+    password_group.add_argument(
+        '--password-file',
+        help='Read password from file'
+    )
+    
+    # Salt options
+    derive_parser.add_argument(
+        '--salt',
+        help='Salt as hexadecimal string (default: random 16 bytes)'
+    )
+    derive_parser.add_argument(
+        '--iterations',
+        type=int,
+        default=100000,
+        help='Iteration count (default: 100000)'
+    )
+    derive_parser.add_argument(
+        '--length',
+        type=int,
+        default=32,
+        help='Desired key length in bytes (default: 32)'
+    )
+    derive_parser.add_argument(
+        '--algorithm',
+        choices=['pbkdf2'],
+        default='pbkdf2',
+        help='KDF algorithm (default: pbkdf2)'
+    )
+    derive_parser.add_argument(
+        '--output',
+        help='Write derived key to file (binary format)'
+    )
+    derive_parser.add_argument(
+        '--output-salt',
+        help='Write salt to file (use with --output)'
+    )
