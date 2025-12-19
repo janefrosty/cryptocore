@@ -1,13 +1,32 @@
+## SPRINT 7 Реализация функций безопасного вывода ключей из паролей и мастер-ключей
 
-## SPRINT 4 Features
+# 1. PBKDF2-HMAC-SHA256
+Спецификация: RFC 2898
 
-- **Hash Functions**: SHA-256 and SHA3-256 implementations
-- **File Integrity**: Verify data integrity with cryptographic hashes
-- **New CLI Structure**: Subcommands for different operations
-- **Interoperable**: Compatible with standard system hash tools
+Алгоритм: HMAC-SHA256
 
-## Installation
+Итерации: До 1,000,000+
 
-```bash
-pip install -r requirements.txt
-pip install -e .
+Длина ключа: Любая (1-100+ байт)
+
+Соль: Поддержка hex-строк и автогенерации
+
+# 2. Иерархия ключей (HKDF-стиль)
+Функция: derive_key(master_key, context, length)
+
+Контекст: Уникальный идентификатор назначения ключа
+
+Детерминированность: Одинаковые входы → одинаковые выходы
+
+Разделение: Разные контексты → разные ключи
+
+
+   Опция	            Описание
+--password	      Парольная строка	
+--password-file   Файл с паролем	
+--salt	          Соль в hex-формате
+--iterations	    Количество итераций
+--length	        Длина ключа в байтах
+--algorithm	      Алгоритм KDF	
+--output	        Файл для сохранения ключа	
+--output-salt	    Файл для сохранения соли	
