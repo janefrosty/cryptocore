@@ -1,5 +1,0 @@
-Metadata-Version: 2.4
-Name: cryptocore
-Version: 2.0.0
-Requires-Dist: pycryptodome
-Dynamic: requires-dist
