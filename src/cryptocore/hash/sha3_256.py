@@ -1,11 +1,16 @@
 import struct
 
 class SHA3_256:
+    """
+    Sprint 4: SHA3-256 implementation from scratch
+    Follows NIST FIPS 202 specification
+    Keccak sponge construction with 1088-bit rate
+    """
     
     def __init__(self):
-        self.rate = 1088 
-        self.capacity = 512 
-        self.output_length = 256 
+        self.rate = 1088
+        self.capacity = 512
+        self.output_length = 256
         
         self.state = [[0] * 5 for _ in range(5)]
         self.buffer = bytearray()
@@ -77,10 +82,10 @@ class SHA3_256:
         self._absorb()
 
     def digest(self):
-        padding = bytearray([0x06])  
+        padding = bytearray([0x06])
         while (len(self.buffer) + len(padding)) % (self.rate // 8) != 0:
             padding.append(0x00)
-        padding[-1] |= 0x80 
+        padding[-1] |= 0x80
         
         self.buffer.extend(padding)
         self._absorb()

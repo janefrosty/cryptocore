@@ -1,3 +1,9 @@
+# CryptoCore
+
+# НОВОЕ
+- Появился файл docs\ARCHITECTURE.md в котором прописана архитектура и зависимости по DOC-4 в sprint8
+- Появился файл tests\test_memody_safety.py который проводит бработку больших файлов (> 1GB виртуально) и очистку конфиденциальных данных по TEST-7 в sprint8
+
 
 Разработка крипто провайдера, имплементирующего блочный шифр
 # CryptoCore – AES-128 ECB Encryption Tool
@@ -11,7 +17,6 @@ CryptoCore — это командный инструмент для шифро�
 - CLI-парсер аргументов  
 - Структурированный и расширяемый код  
 
----
 
 ## Возможности
 
@@ -22,7 +27,6 @@ CryptoCore — это командный инструмент для шифро�
 - Корректное добавление и удаление PKCS#7 padding  
 - CLI-утилита `cryptocore`
 
----
 
 ## Установка
 
@@ -98,7 +102,7 @@ cryptocore dgst --algorithm sha3-256 --input file.pdf
 cryptocore dgst --algorithm sha256 --input document.pdf --output hash.txt
 
 # Хэширование пустого файла
-echo -n "" > empty.txt
+echo -n " " > empty.txt
 cryptocore dgst --algorithm sha256 --input empty.txt
 ```
 ## Шифрование (обратная совместимость)
