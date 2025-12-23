@@ -1,7 +1,6 @@
 README.md
 setup.py
 src/cryptocore/__init__.py
-src/cryptocore/__main__.py
 src/cryptocore/cli_parser.py
 src/cryptocore/csprng.py
 src/cryptocore/file_io.py
@@ -12,10 +11,18 @@ src/cryptocore.egg-info/dependency_links.txt
 src/cryptocore.egg-info/entry_points.txt
 src/cryptocore.egg-info/requires.txt
 src/cryptocore.egg-info/top_level.txt
+src/cryptocore/hash/__init__.py
+src/cryptocore/hash/sha256.py
+src/cryptocore/hash/sha3_256.py
+src/cryptocore/kdf/__init__.py
+src/cryptocore/kdf/hkdf.py
+src/cryptocore/kdf/pbkdf2.py
+src/cryptocore/mac/__init__.py
+src/cryptocore/mac/hmac.py
 src/cryptocore/modes/__init__.py
 src/cryptocore/modes/cbc.py
 src/cryptocore/modes/cfb.py
 src/cryptocore/modes/ctr.py
 src/cryptocore/modes/ecb.py
+src/cryptocore/modes/gcm.py
 src/cryptocore/modes/ofb.py
-tests/test_csprng.py
