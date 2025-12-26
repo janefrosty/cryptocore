@@ -68,26 +68,26 @@ cryptocore ^
 ### Другие методы
 ```powershell
 # CBC
-cryptocore --algorithm aes --mode cbc --encrypt --key 00112233445566778899aabbccddeeff --input original.txt --output encrypted.bin
-cryptocore --algorithm aes --mode cbc --decrypt --key 00112233445566778899aabbccddeeff --input encrypted.bin --output decrypted.txt
+cryptocore enc --algorithm aes --mode cbc --encrypt --key 00112233445566778899aabbccddeeff --input original.txt --output encrypted.bin
+cryptocore enc --algorithm aes --mode cbc --decrypt --key 00112233445566778899aabbccddeeff --input encrypted.bin --output decrypted.txt
 
 # CFB
-cryptocore --algorithm aes --mode cfb --encrypt --key 00112233445566778899aabbccddeeff --input original.txt --output encrypted.bin
-cryptocore --algorithm aes --mode cfb --decrypt --key 00112233445566778899aabbccddeeff --input encrypted.bin --output decrypted.txt
+cryptocore enc --algorithm aes --mode cfb --encrypt --key 00112233445566778899aabbccddeeff --input original.txt --output encrypted.bin
+cryptocore enc --algorithm aes --mode cfb --decrypt --key 00112233445566778899aabbccddeeff --input encrypted.bin --output decrypted.txt
 
 # CTR
-cryptocore --algorithm aes --mode ctr --encrypt --key 00112233445566778899aabbccddeeff --input original.txt --output encrypted.bin
-cryptocore --algorithm aes --mode ctr --decrypt --key 00112233445566778899aabbccddeeff --input encrypted.bin --output decrypted.txt
+cryptocore enc --algorithm aes --mode ctr --encrypt --key 00112233445566778899aabbccddeeff --input original.txt --output encrypted.bin
+cryptocore enc --algorithm aes --mode ctr --decrypt --key 00112233445566778899aabbccddeeff --input encrypted.bin --output decrypted.txt
 ```
 
 ### Цикл с авто-генерацией ключа
 ```powershell
 # Шифрование с авто-генерацией
-cryptocore --algorithm aes --mode cbc --encrypt --input original.txt --output auto_enc.bin
+cryptocore enc --algorithm aes --mode cbc --encrypt --input original.txt --output auto_enc.bin
 
 # Запоминаем сгенерированный ключ из вывода
 # Расшифровка с сгенерированным ключом  
-cryptocore --algorithm aes --mode cbc --decrypt --key [GENERATED_KEY] --input auto_enc.bin --output auto_dec.txt
+cryptocore enc --algorithm aes --mode cbc --decrypt --key [GENERATED_KEY] --input auto_enc.bin --output auto_dec.txt
 
 # Проверка целостности
 fc original.txt auto_dec.txt /b
